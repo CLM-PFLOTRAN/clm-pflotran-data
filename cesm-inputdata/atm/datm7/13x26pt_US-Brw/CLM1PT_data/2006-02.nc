@@ -1,0 +1,1 @@
+../../CLM1PT_data/1x1pt_US-Brw/2006-02.nc
