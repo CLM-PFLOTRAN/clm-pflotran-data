@@ -1,0 +1,217 @@
+!Description! 3D groundwater flow and solute transport
+
+!=========================== simulation ========================================
+SIMULATION
+  SIMULATION_TYPE SUBSURFACE
+  PROCESS_MODELS
+    SUBSURFACE_FLOW flow
+      MODE RICHARDS
+    /
+  /
+END
+
+SUBSURFACE
+
+!=========================== discretization ===================================
+GRID
+  TYPE unstructured ugrid-1x1x10.mesh
+END
+
+!=========================== fluid properties =================================
+FLUID_PROPERTY
+  DIFFUSION_COEFFICIENT 1.d-9
+END
+
+!=========================== material properties ==============================
+MATERIAL_PROPERTY soil1
+  ID 1
+  POROSITY 0.55d0
+  TORTUOSITY 0.5d0
+  ROCK_DENSITY 2.8E3
+  SATURATION_FUNCTION sf1
+  PERMEABILITY
+    PERM_X 7.918d-11
+    PERM_Y 7.918d-11
+    PERM_Z 7.918d-13
+  /
+END
+
+MATERIAL_PROPERTY soil2
+  ID 2
+  POROSITY 0.86d0
+  TORTUOSITY 0.5d0
+  ROCK_DENSITY 2.8E3
+  SATURATION_FUNCTION sf2
+  PERMEABILITY
+    PERM_X 9.465d-10
+    PERM_Y 9.465d-10
+    PERM_Z 9.465d-12
+  /
+END
+
+MATERIAL_PROPERTY soil3
+  ID 3
+  POROSITY 0.90d0
+  TORTUOSITY 0.5d0
+  ROCK_DENSITY 2.8E3
+  SATURATION_FUNCTION sf2
+  PERMEABILITY
+    PERM_X 1.7656d-09
+    PERM_Y 1.7656d-09
+    PERM_Z 1.7656d-11
+  /
+END
+
+!=========================== CHARACTERISTIC CURVES =============================
+CHARACTERISTIC_CURVES sf1
+  SATURATION_FUNCTION VAN_GENUCHTEN
+    M 0.2593d0
+    ALPHA  1.53391d-04
+    LIQUID_RESIDUAL_SATURATION 0.05d0
+  /
+  PERMEABILITY_FUNCTION MUALEM_VG_LIQ
+    M 0.2593d0
+    LIQUID_RESIDUAL_SATURATION 0.05d0
+  /
+END
+
+CHARACTERISTIC_CURVES sf2
+  SATURATION_FUNCTION VAN_GENUCHTEN
+    M 0.2593d0
+    ALPHA  1.0226d-04
+    LIQUID_RESIDUAL_SATURATION 0.05d0
+  /
+  PERMEABILITY_FUNCTION MUALEM_VG_LIQ
+    M 0.2593d0
+    LIQUID_RESIDUAL_SATURATION 0.05d0
+  /
+END
+
+CHARACTERISTIC_CURVES sf3
+  SATURATION_FUNCTION VAN_GENUCHTEN
+    M 0.2593d0
+    ALPHA  2.0452d-04
+    LIQUID_RESIDUAL_SATURATION 0.05d0
+  /
+  PERMEABILITY_FUNCTION MUALEM_VG_LIQ
+    M 0.2593d0
+    LIQUID_RESIDUAL_SATURATION 0.05d0
+  /
+END
+
+skip
+!=========================== saturation functions =============================
+SATURATION_FUNCTION sf1
+  SATURATION_FUNCTION_TYPE VAN_GENUCHTEN
+  RESIDUAL_SATURATION 0.05d0
+  LAMBDA 0.2593d0
+  ALPHA 1.53391d-04
+  MAX_CAPILLARY_PRESSURE 1.d8
+END
+
+SATURATION_FUNCTION sf2
+  SATURATION_FUNCTION_TYPE VAN_GENUCHTEN
+  RESIDUAL_SATURATION 0.05d0
+  LAMBDA 0.2593d0
+  ALPHA 1.0226d-04
+  MAX_CAPILLARY_PRESSURE 1.d8
+END
+
+SATURATION_FUNCTION sf3
+  SATURATION_FUNCTION_TYPE VAN_GENUCHTEN
+  RESIDUAL_SATURATION 0.05d0
+  LAMBDA 0.2593d0
+  ALPHA 2.0452d-04
+  MAX_CAPILLARY_PRESSURE 1.d8
+END
+noskip
+
+!=========================== output options ===================================
+skip
+OUTPUT
+!  PERIODIC TIME 3600. s
+  PERIODIC TIME 1 d
+  FORMAT HDF5
+END
+noskip
+
+!=========================== times ============================================
+TIME
+  !FINAL_TIME 1.d0 s
+  FINAL_TIME 864000 s
+  !FINAL_TIME 10 d
+  INITIAL_TIMESTEP_SIZE 3600.0 s
+  MAXIMUM_TIMESTEP_SIZE 3600.0 s        ! produces CFL ~<= 1.
+END
+
+!=========================== regions ==========================================
+REGION all
+  COORDINATES
+    0.d0 0.d0 0.d0
+    1.d0 1.d0 10.d0
+  /
+END
+
+REGION top
+  FILE top.ss
+  
+END
+
+!=========================== flow conditions ==================================
+FLOW_CONDITION initial
+  TYPE
+    PRESSURE hydrostatic
+  /
+  INTERPOLATION linear
+  DATUM 0.d0 0.d0 3.0d0
+  PRESSURE 101325.d0
+END
+
+FLOW_CONDITION et
+  TYPE
+    RATE heterogeneous_mass_rate
+  /
+  RATE 0.0d0
+END
+
+FLOW_CONDITION gflux
+  TYPE
+    PRESSURE neumann
+   /
+   FLUX 0.d0
+END
+
+!=========================== condition couplers ===============================
+! initial condition
+INITIAL_CONDITION initial_copuler
+  FLOW_CONDITION initial
+  REGION all
+END
+
+SOURCE_SINK clm_et_ss
+  FLOW_CONDITION et
+  REGION all 
+END
+
+BOUNDARY_CONDITION clm_gflux_bc
+  FLOW_CONDITION gflux
+  REGION top
+END
+
+!=========================== stratigraphy couplers ============================
+STRATA
+  REGION all
+  MATERIAL soil1
+END
+
+HDF5_READ_GROUP_SIZE 1
+
+END_SUBSURFACE
+
+!=========================== mapping files  ============================
+MAPPING_FILES                   
+  PF2CLM_FLUX_FILE ugrid-1x1x10-pf2clm.meshmap
+  CLM2PF_FLUX_FILE ugrid-1x1x10-clm2pf.meshmap
+  CLM2PF_SOIL_FILE ugrid-1x1x10-clm2pf.meshmap
+  CLM2PF_GFLUX_FILE ugrid-1x1x10-clm2pf_surf.meshmap
+END

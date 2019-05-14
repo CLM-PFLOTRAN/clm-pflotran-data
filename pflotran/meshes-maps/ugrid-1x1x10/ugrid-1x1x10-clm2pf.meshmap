@@ -1,0 +1,33 @@
+! Num of CLM soil layers (for soil hydrology)
+clm_nlevsoi 10
+
+! Num of CLM ground layers (for soil heat transport)
+clm_nlevgrnd 15
+
+! Num of CLM layers mapped
+clm_nlev_mapped 10
+
+! Num of PFLOTRAN soil layers
+pflotran_nlev 10
+
+! Num of PFLOTRAN soil layers mapped
+pflotran_nlev_mapped 10
+
+! Num of weights
+num_weights 10
+
+! FORMAT:
+! pf_cell_idx clm_cell_idx weight
+!
+! Note: 'pf_cell_idx' and 'clm_cell_idx' are in natural-order
+!
+1 10 1.0
+2 9 1.0
+3 8 1.0
+4 7 1.0
+5 6 1.0
+6 5 1.0
+7 4 1.0
+8 3 1.0
+9 2 1.0
+10 1 1.0
